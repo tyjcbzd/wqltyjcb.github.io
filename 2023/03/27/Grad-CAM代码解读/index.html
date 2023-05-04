@@ -23,13 +23,13 @@
 <meta property="og:site_name" content="WQLTYJCB">
 <meta property="og:description" content="Grad-CAM 代码解析main代码1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162import osimport numpy as npimport torchfrom PIL import Imageimport">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://tyjcbzd.github.io/wqltyjcb.github.io/assets/picc.png">
+<meta property="og:image" content="https://tyjcbzd.github.io/wqltyjcb.github.io/img/picc.png">
 <meta property="article:published_time" content="2023-03-27T07:24:24.000Z">
-<meta property="article:modified_time" content="2023-04-27T11:45:12.675Z">
+<meta property="article:modified_time" content="2023-05-04T11:57:07.331Z">
 <meta property="article:author" content="WQLTYJCB">
 <meta property="article:tag" content="类激活图，CNN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://tyjcbzd.github.io/wqltyjcb.github.io/assets/picc.png">
+<meta name="twitter:image" content="https://tyjcbzd.github.io/wqltyjcb.github.io/img/picc.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -86,7 +86,11 @@
 
 
   
-<meta name="generator" content="Hexo 6.3.0"></head>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
 
 
 <body>
@@ -304,7 +308,7 @@
 <h3 id="step6-选取要检测的类别以及GradCAM类的执行"><a href="#step6-选取要检测的类别以及GradCAM类的执行" class="headerlink" title="step6 选取要检测的类别以及GradCAM类的执行"></a>step6 选取要检测的类别以及GradCAM类的执行</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">target_category = <span class="hljs-number">281</span>  <span class="hljs-comment"># tabby, tabby cat</span><br>    <span class="hljs-comment"># target_category = 254  # pug, pug-dog</span><br><br>grayscale_cam = cam(input_tensor=input_tensor, target_category=target_category)<br></code></pre></td></tr></table></figure>
 
 <p>关于类281,如下图：（index从0开始），这是一个包含1k个类的编号txt文件</p>
-<p><img src="/wqltyjcb.github.io/./assets/picc.png" srcset="/wqltyjcb.github.io/img/loading.gif" lazyload alt="picc"></p>
+<p><img src="/wqltyjcb.github.io/img/picc.png" srcset="/wqltyjcb.github.io/img/loading.gif" lazyload alt="picc"></p>
 <p>然后看看cam如何执行</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">__call__</span>(<span class="hljs-params">self, input_tensor, target_category=<span class="hljs-literal">None</span></span>):<br><br>    <span class="hljs-keyword">if</span> self.cuda:<br>        input_tensor = input_tensor.cuda()<br><br>    <span class="hljs-comment"># 正向传播得到网络输出logits(未经过softmax)</span><br>    <span class="hljs-comment"># 这里activations_and_grads上面已经解释过了</span><br>    output = self.activations_and_grads(input_tensor)<br>    <span class="hljs-comment"># 这个int指的是类的对应序号，在imagenet1k_classes.txt/imagenet21k.txt</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(target_category, <span class="hljs-built_in">int</span>):<br>        target_category = [target_category] * input_tensor.size(<span class="hljs-number">0</span>)<br><br>    <span class="hljs-comment"># 如果没有选择想要查找的类，那么找得分最高的类</span><br>    <span class="hljs-keyword">if</span> target_category <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>        target_category = np.argmax(output.cpu().data.numpy(), axis=-<span class="hljs-number">1</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;category id: <span class="hljs-subst">&#123;target_category&#125;</span>&quot;</span>)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">assert</span> (<span class="hljs-built_in">len</span>(target_category) == input_tensor.size(<span class="hljs-number">0</span>))<br><br>    self.model.zero_grad()<br>    <span class="hljs-comment"># 计算损失</span><br>    loss = self.get_loss(output, target_category)<br>    loss.backward(retain_graph=<span class="hljs-literal">True</span>)<br><br>    cam_per_layer = self.compute_cam_per_layer(input_tensor)<br>    <span class="hljs-comment"># 合并找的所有层</span><br>    <span class="hljs-keyword">return</span> self.aggregate_multi_layers(cam_per_layer)<br></code></pre></td></tr></table></figure>
 
@@ -414,15 +418,15 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/wqltyjcb.github.io/2023/05/04/%E5%BF%AB%E9%80%9F%E5%82%85%E9%87%8C%E5%8F%B6%E8%BD%AC%E6%8D%A2%E6%8E%A8%E5%AF%BC%E5%92%8CPython%E5%BA%94%E7%94%A8/" title="快速傅里叶转换推导和Python应用">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">快速傅里叶转换推导和Python应用</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
-                    
-                      <a href="/wqltyjcb.github.io/2023/03/17/hello-world/" title="Hello World">
-                        <span class="hidden-mobile">Hello World</span>
-                        <span class="visible-mobile">Next</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
                     
                   </article>
                 </div>
