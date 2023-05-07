@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/wqltyjcb.github.io/img/OIP.png">
+  <link rel="icon" href="/wqltyjcb.github.io/img/OIP.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="WQLTYJCB">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="LeNetPyTorch中Tensor的通道排序：[batch, channel, height,width] 如何搭建一个完整的神经网络Model部分12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455import torchimport torc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建一个完整的神经网络(以LeNet为例)">
+<meta property="og:url" content="https://tyjcbzd.github.io/wqltyjcb.github.io/2023/05/07/%E6%90%AD%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C-%E4%BB%A5LeNet%E4%B8%BA%E4%BE%8B/index.html">
+<meta property="og:site_name" content="WQLTYJCB">
+<meta property="og:description" content="LeNetPyTorch中Tensor的通道排序：[batch, channel, height,width] 如何搭建一个完整的神经网络Model部分12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455import torchimport torc">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-07T10:47:02.000Z">
+<meta property="article:modified_time" content="2023-05-07T10:48:48.167Z">
+<meta property="article:author" content="WQLTYJCB">
+<meta property="article:tag" content="模型搭建，Pytorch">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>搭建一个完整的神经网络(以LeNet为例) - WQLTYJCB</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/wqltyjcb.github.io/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/wqltyjcb.github.io/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/wqltyjcb.github.io/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"tyjcbzd.github.io","root":"/wqltyjcb.github.io/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/wqltyjcb.github.io/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/wqltyjcb.github.io/js/utils.js" ></script>
+  <script  src="/wqltyjcb.github.io/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/wqltyjcb.github.io/">
+      <strong>4ZD</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/wqltyjcb.github.io/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/wqltyjcb.github.io/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/wqltyjcb.github.io/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/wqltyjcb.github.io/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/wqltyjcb.github.io/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/wqltyjcb.github.io/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="搭建一个完整的神经网络(以LeNet为例)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-07 13:47" pubdate>
+          May 7, 2023 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> views
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">搭建一个完整的神经网络(以LeNet为例)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="LeNet"><a href="#LeNet" class="headerlink" title="LeNet"></a>LeNet</h1><p>PyTorch中Tensor的通道排序：[batch, channel, height,width]</p>
+<h2 id="如何搭建一个完整的神经网络"><a href="#如何搭建一个完整的神经网络" class="headerlink" title="如何搭建一个完整的神经网络"></a>如何搭建一个完整的神经网络</h2><h3 id="Model部分"><a href="#Model部分" class="headerlink" title="Model部分"></a>Model部分</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn<br><span class="hljs-keyword">import</span> torch.nn.functional <span class="hljs-keyword">as</span> F<br><span class="hljs-keyword">from</span> torch.nn <span class="hljs-keyword">import</span> Conv2d, MaxPool2d, Linear, ReLU, Flatten, Softmax<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">LeNet</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">super</span>(LeNet, self).__init__()<br>        <span class="hljs-comment"># self.conv1 = nn.Conv2d(3, 16, 5)</span><br>        <span class="hljs-comment"># self.pool1 = nn.MaxPool2d(2, 2)</span><br>        <span class="hljs-comment"># self.conv2 = nn.Conv2d(16, 32, 5)</span><br>        <span class="hljs-comment"># self.pool2 = nn.MaxPool2d(2, 2)</span><br>        <span class="hljs-comment"># self.fc1 = nn.Linear(32*5*5, 120)</span><br>        <span class="hljs-comment"># self.fc2 = nn.Linear(120, 84)</span><br>        <span class="hljs-comment"># self.fc3 = nn.Linear(84, 10)</span><br><br>        self.model = nn.Sequential(<br>            Conv2d(in_channels=<span class="hljs-number">3</span>, out_channels=<span class="hljs-number">16</span>, kernel_size=<span class="hljs-number">5</span>),<br>            ReLU(),<br>            MaxPool2d(kernel_size=<span class="hljs-number">2</span>, stride=<span class="hljs-number">2</span>),<br>            Conv2d(in_channels=<span class="hljs-number">16</span>, out_channels=<span class="hljs-number">32</span>, kernel_size=<span class="hljs-number">5</span>),<br>            ReLU(),<br>            MaxPool2d(kernel_size=<span class="hljs-number">2</span>, stride=<span class="hljs-number">2</span>),<br>            <span class="hljs-comment"># 展平</span><br>            Flatten(),<br>            Linear(in_features=<span class="hljs-number">32</span> * <span class="hljs-number">5</span> * <span class="hljs-number">5</span>, out_features=<span class="hljs-number">120</span>),<br>            ReLU(),<br>            Linear(in_features=<span class="hljs-number">120</span>, out_features=<span class="hljs-number">84</span>),<br>            ReLU(),<br>            Linear(in_features=<span class="hljs-number">84</span>, out_features=<span class="hljs-number">10</span>),<br>            <span class="hljs-comment"># Softmax()</span><br>            <span class="hljs-comment"># CrossEntropy中包含Softmax</span><br>        )<br><br><br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x</span>):<br>        <span class="hljs-comment"># x = F.relu(self.conv1(x))    # input(3, 32, 32) output(16, 28, 28)</span><br>        <span class="hljs-comment"># x = self.pool1(x)            # output(16, 14, 14)</span><br>        <span class="hljs-comment"># x = F.relu(self.conv2(x))    # output(32, 10, 10)</span><br>        <span class="hljs-comment"># x = self.pool2(x)            # output(32, 5, 5)</span><br>        <span class="hljs-comment"># x = x.view(-1, 32*5*5)       # output(32*5*5)</span><br>        <span class="hljs-comment"># x = F.relu(self.fc1(x))      # output(120)</span><br>        <span class="hljs-comment"># x = F.relu(self.fc2(x))      # output(84)</span><br>        <span class="hljs-comment"># x = self.fc3(x)              # output(10)</span><br>        <span class="hljs-keyword">return</span> self.model(x)<br><br><br><br><span class="hljs-comment"># model = LeNet()</span><br><span class="hljs-comment"># data = torch.randn([1, 3, 32, 32])</span><br><span class="hljs-comment"># print(model(data).shape)</span><br><span class="hljs-comment"># print(model(data))</span><br><br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="Train部分"><a href="#Train部分" class="headerlink" title="Train部分"></a>Train部分</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> sys<br><br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><span class="hljs-keyword">from</span> matplotlib <span class="hljs-keyword">import</span> pyplot <span class="hljs-keyword">as</span> plt<br><span class="hljs-keyword">from</span> torch.utils.data <span class="hljs-keyword">import</span> DataLoader<br><span class="hljs-keyword">import</span> torch.optim <span class="hljs-keyword">as</span> optim<br><span class="hljs-keyword">from</span> model <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> tqdm <span class="hljs-keyword">import</span> tqdm<br><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torchvision<br><br><br><span class="hljs-comment"># 以类的方式定义参数，还有很多方法，config文件等等</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Args</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-literal">None</span>:<br>        self.batch_size = <span class="hljs-number">1</span><br>        self.learning_rate = <span class="hljs-number">0.001</span><br>        self.epochs = <span class="hljs-number">10</span><br>        self.device = torch.device(<span class="hljs-string">&quot;cuda:0&quot;</span> <span class="hljs-keyword">if</span> torch.cuda.is_available() <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;cpu&quot;</span>)<br><br><br>args = Args()<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():<br>    <span class="hljs-comment"># 模型保存文件</span><br>    save_path = <span class="hljs-string">&#x27;./Lenet.pth&#x27;</span><br>    <span class="hljs-comment"># 是否可用GPU</span><br>    device = args.device<br>    <span class="hljs-comment"># device = torch.device(&quot;cuda:0&quot; if torch.cuda.is_available() else &quot;cpu&quot;)</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;using &#123;&#125; device.&quot;</span>.<span class="hljs-built_in">format</span>(device))<br><br>    <span class="hljs-comment"># 数据集</span><br>    train_set = torchvision.datasets.CIFAR10(root=<span class="hljs-string">&#x27;./data&#x27;</span>, train=<span class="hljs-literal">True</span>,<br>                                             transform=torchvision.transforms.ToTensor(),<br>                                             download=<span class="hljs-literal">True</span>)<br>    valid_set = torchvision.datasets.CIFAR10(root=<span class="hljs-string">&#x27;./data&#x27;</span>, train=<span class="hljs-literal">False</span>,<br>                                             transform=torchvision.transforms.ToTensor(),<br>                                             download=<span class="hljs-literal">True</span>)<br>    <span class="hljs-comment"># 训练集和验证集的长度，用于计算正确率</span><br>    train_length = <span class="hljs-built_in">len</span>(train_set)<br>    valid_length = <span class="hljs-built_in">len</span>(valid_set)<br><br>    <span class="hljs-comment"># 利用DataLoader加载数据集</span><br>    train_data_loader = DataLoader(train_set, batch_size=<span class="hljs-number">4</span>, shuffle=<span class="hljs-literal">True</span>)<br>    valid_data_loader = DataLoader(valid_set, batch_size=<span class="hljs-number">4</span>, shuffle=<span class="hljs-literal">True</span>)<br><br>    <span class="hljs-comment"># initialize model,loss,optimizer</span><br>    net = LeNet()<br>    net.to(device)<br>    loss_fn = nn.CrossEntropyLoss()<br>    optimizer = optim.Adam(net.parameters(), lr=args.learning_rate)<br>    best_acc = <span class="hljs-number">0.0</span><br><br>    train_epochs_loss = []<br>    valid_epochs_loss = []<br>    train_acc = []<br>    val_acc = []<br><br>    <span class="hljs-keyword">for</span> epoch <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(args.epochs):<br>        <span class="hljs-comment"># ================train============================</span><br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&#x27;================Epoch:<span class="hljs-subst">&#123;epoch + <span class="hljs-number">1</span>&#125;</span> starts training============================&#x27;</span>)<br>        net.train()<br>        train_epoch_loss = []<br>        acc = <span class="hljs-number">0</span><br>        train_bar = tqdm(train_data_loader, file=sys.stdout)<br>        <span class="hljs-keyword">for</span> step, data <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(train_bar):<br>            inputs, labels = data<br>            inputs, labels = inputs.to(device), labels.to(device)<br>            <span class="hljs-comment"># 清零梯度</span><br>            optimizer.zero_grad()<br>            <span class="hljs-comment"># 预测结果</span><br>            outputs = net(inputs)<br>            <span class="hljs-comment"># 计算损失</span><br>            loss = loss_fn(outputs, labels)<br>            <span class="hljs-comment"># 反向梯度计算</span><br>            loss.backward()<br>            <span class="hljs-comment"># 利用反向传播得到的梯度更新参数</span><br>            optimizer.step()<br><br>            train_epoch_loss.append(loss.item())<br>            predict_y = torch.<span class="hljs-built_in">max</span>(outputs, dim=<span class="hljs-number">1</span>)[<span class="hljs-number">1</span>]<br>            acc += torch.eq(predict_y, labels).<span class="hljs-built_in">sum</span>().item()<br><br>            train_bar.desc = <span class="hljs-string">&quot;train epoch[&#123;&#125;/&#123;&#125;] loss:&#123;:.3f&#125;&quot;</span>.<span class="hljs-built_in">format</span>(epoch + <span class="hljs-number">1</span>,<br>                                                                     args.epochs,<br>                                                                     loss)<br>        train_epochs_loss.append(np.average(train_epoch_loss))<br><br>        <span class="hljs-comment"># 所有train epoch汇总，用于绘图</span><br>        train_acc.append(acc / train_length)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;train acc = &#123;:.3f&#125;, loss = &#123;&#125;&quot;</span>.<span class="hljs-built_in">format</span>(acc / train_length, np.average(train_epoch_loss)))<br><br>        <span class="hljs-comment"># ================ validation ============================</span><br>        <span class="hljs-comment"># 训练集的所有数据全部训练完了再进行测验</span><br>        <span class="hljs-keyword">with</span> torch.no_grad():<br>            net.<span class="hljs-built_in">eval</span>()<br>            test_bar = tqdm(valid_data_loader, file=sys.stdout)<br>            val_epoch_loss = []<br>            acc, num = <span class="hljs-number">0</span>, <span class="hljs-number">0</span><br><br>            <span class="hljs-keyword">for</span> data <span class="hljs-keyword">in</span> test_bar:<br>                inputs, labels = data<br>                inputs, labels = inputs.to(device), labels.to(device)<br>                outputs = net(inputs)<br>                <span class="hljs-comment"># 测试误差</span><br>                loss = loss_fn(outputs, labels.to(device))<br>                val_epoch_loss.append(loss.item())<br>                <span class="hljs-comment"># 每一个预测类</span><br>                predict_y = torch.<span class="hljs-built_in">max</span>(outputs, dim=<span class="hljs-number">1</span>)[<span class="hljs-number">1</span>]<br>                acc += torch.eq(predict_y, labels).<span class="hljs-built_in">sum</span>().item()<br><br>            valid_epochs_loss.append(np.average(val_epoch_loss))<br>            val_acc.append(acc/valid_length)<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;epoch = &#123;&#125;, valid acc = &#123;:.2f&#125;, loss = &#123;&#125;&quot;</span>.<span class="hljs-built_in">format</span>(epoch + <span class="hljs-number">1</span>,<br>                                                                     acc/valid_length,<br>                                                                     np.average(val_epoch_loss)))<br>            <span class="hljs-comment"># =========================save model=====================</span><br>            <span class="hljs-comment"># 验证集上正确率更高就保存模型参数</span><br>            <span class="hljs-keyword">if</span> acc/valid_length &gt; best_acc:<br>                best_acc = acc/valid_length<br>                torch.save(net.state_dict(), save_path)<br><br>    <span class="hljs-comment"># =========================plot==========================</span><br>    plt.figure(figsize=(<span class="hljs-number">12</span>, <span class="hljs-number">4</span>))<br>    plt.subplot(<span class="hljs-number">121</span>)<br>    plt.plot(train_acc, <span class="hljs-string">&#x27;-&#x27;</span>, label=<span class="hljs-string">&quot;train_acc&quot;</span>)<br>    plt.plot(val_acc, <span class="hljs-string">&#x27;-&#x27;</span>, label=<span class="hljs-string">&quot;validation_acc&quot;</span>)<br>    plt.title(<span class="hljs-string">&quot;epochs_accuracy&quot;</span>)<br>    plt.subplot(<span class="hljs-number">122</span>)<br>    plt.plot(train_epochs_loss, <span class="hljs-string">&#x27;-o&#x27;</span>, label=<span class="hljs-string">&quot;train_loss&quot;</span>)<br>    plt.plot(valid_epochs_loss, <span class="hljs-string">&#x27;-o&#x27;</span>, label=<span class="hljs-string">&quot;valid_loss&quot;</span>)<br>    plt.title(<span class="hljs-string">&quot;epochs_loss&quot;</span>)<br>    plt.legend()<br>    plt.show()<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;finish training&quot;</span>)<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="predict部分"><a href="#predict部分" class="headerlink" title="predict部分"></a>predict部分</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torchvision.transforms <span class="hljs-keyword">as</span> transforms<br><span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image<br><br><span class="hljs-keyword">from</span> model <span class="hljs-keyword">import</span> LeNet<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():<br>    transform = transforms.Compose(<br>        [transforms.Resize((<span class="hljs-number">32</span>, <span class="hljs-number">32</span>)),<br>         transforms.ToTensor(),<br>         transforms.Normalize((<span class="hljs-number">0.5</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.5</span>), (<span class="hljs-number">0.5</span>, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.5</span>))])<br><br>    classes = (<span class="hljs-string">&#x27;plane&#x27;</span>, <span class="hljs-string">&#x27;car&#x27;</span>, <span class="hljs-string">&#x27;bird&#x27;</span>, <span class="hljs-string">&#x27;cat&#x27;</span>,<br>               <span class="hljs-string">&#x27;deer&#x27;</span>, <span class="hljs-string">&#x27;dog&#x27;</span>, <span class="hljs-string">&#x27;frog&#x27;</span>, <span class="hljs-string">&#x27;horse&#x27;</span>, <span class="hljs-string">&#x27;ship&#x27;</span>, <span class="hljs-string">&#x27;truck&#x27;</span>)<br><br>    net = LeNet()<br>    net.load_state_dict(torch.load(<span class="hljs-string">&#x27;Lenet.pth&#x27;</span>))<br><br>    im = Image.<span class="hljs-built_in">open</span>(<span class="hljs-string">&#x27;1.jpg&#x27;</span>)<br>    im = transform(im)  <span class="hljs-comment"># [C, H, W]</span><br>    im = torch.unsqueeze(im, dim=<span class="hljs-number">0</span>)  <span class="hljs-comment"># [N, C, H, W] 在0维增加一个维度</span><br><br>    <span class="hljs-keyword">with</span> torch.no_grad():<br>        outputs = net(im)<br>        result = torch.softmax(outputs,dim=<span class="hljs-number">1</span>)<br>        predict = torch.<span class="hljs-built_in">max</span>(outputs, dim=<span class="hljs-number">1</span>)[<span class="hljs-number">1</span>].numpy()<br>    <span class="hljs-built_in">print</span>(outputs)<br>    <span class="hljs-built_in">print</span>(result)<br>    <span class="hljs-built_in">print</span>(classes[<span class="hljs-built_in">int</span>(predict)])<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    main()<br><br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/wqltyjcb.github.io/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="category-chain-item">深度学习</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/wqltyjcb.github.io/tags/%E6%A8%A1%E5%9E%8B%E6%90%AD%E5%BB%BA%EF%BC%8CPytorch/">#模型搭建，Pytorch</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>搭建一个完整的神经网络(以LeNet为例)</div>
+      <div>https://tyjcbzd.github.io/wqltyjcb.github.io/2023/05/07/搭建一个完整的神经网络-以LeNet为例/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>WQLTYJCB</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 7, 2023</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/wqltyjcb.github.io/2023/05/04/PYTORCH%E6%A8%A1%E5%9E%8B%E4%BF%AE%E6%94%B9/" title="PYTORCH模型修改">
+                        <span class="hidden-mobile">PYTORCH模型修改</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        Views: 
+        <span id="busuanzi_value_site_pv"></span>
+        
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        Visitors: 
+        <span id="busuanzi_value_site_uv"></span>
+        
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/wqltyjcb.github.io/js/events.js" ></script>
+<script  src="/wqltyjcb.github.io/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/wqltyjcb.github.io/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/wqltyjcb.github.io/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/wqltyjcb.github.io/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
